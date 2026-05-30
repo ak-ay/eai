@@ -1778,13 +1778,17 @@
 
         .hero-actions {
           display: grid;
-          grid-template-columns: 1fr;
-          gap: 10px;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 8px;
           margin-bottom: 14px;
         }
 
         .hero-actions .button {
           width: 100%;
+          min-height: 44px;
+          padding: 0 10px;
+          text-align: center;
+          font-size: 0.88rem;
         }
 
         .trust-row {
