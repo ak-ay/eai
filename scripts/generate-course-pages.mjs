@@ -2,6 +2,25 @@ import { mkdir, writeFile } from "node:fs/promises";
 
 const root = "https://www.eaiorg.in";
 const whatsapp = "https://wa.me/919747735355";
+const siteName = "Empowering Aspirational India";
+const heroImage = `${root}/assets/hero.jpeg`;
+const logoImage = `${root}/assets/logo.jpeg`;
+const organization = {
+  "@type": "EducationalOrganization",
+  "@id": `${root}/#organization`,
+  name: siteName,
+  alternateName: "EAI",
+  url: `${root}/`,
+  logo: logoImage,
+  image: heroImage,
+  email: "reachus@eaiorg.in",
+  telephone: "+91 97477 35355",
+  areaServed: {
+    "@type": "Country",
+    name: "India",
+  },
+  sameAs: ["https://www.facebook.com/EAIORGIN/", "https://www.instagram.com/eaiorgin/"],
+};
 
 const pages = [
   {
@@ -273,21 +292,41 @@ const whatsappPath = (course) =>
 const json = (value) => JSON.stringify(value, null, 2).replace(/</g, "\\u003c");
 
 function renderPage(page) {
+  const pagePath = page.url.replace(`${root}/`, "").replace(/\/$/, "");
+  const breadcrumbName = pagePath.startsWith("courses") ? "Courses" : "Doctoral Programs";
+  const keywords = [
+    page.h1,
+    page.credential,
+    `${page.credential} India`,
+    "Empowering Aspirational India",
+    "EAI",
+    "online programs India",
+    page.provider,
+  ].join(", ");
+
   const structuredData = {
     "@context": "https://schema.org",
     "@graph": [
+      organization,
       {
         "@type": "Course",
         "@id": page.url,
         url: page.url,
         name: page.h1,
         description: page.description,
+        inLanguage: "en-IN",
         courseMode: page.mode,
         educationalCredentialAwarded: page.credential,
         provider: {
           "@type": "Organization",
           name: page.provider,
           url: page.providerUrl,
+        },
+        offers: {
+          "@type": "Offer",
+          availability: "https://schema.org/InStock",
+          category: "Education",
+          url: page.url,
         },
       },
       {
@@ -296,11 +335,47 @@ function renderPage(page) {
         url: page.url,
         name: page.title,
         description: page.description,
+        inLanguage: "en-IN",
         isPartOf: {
           "@type": "WebSite",
-          name: "Empowering Aspirational India",
-          url: root,
+          "@id": `${root}/#website`,
+          name: siteName,
+          url: `${root}/`,
         },
+        about: {
+          "@id": page.url,
+        },
+        publisher: {
+          "@id": `${root}/#organization`,
+        },
+        primaryImageOfPage: {
+          "@type": "ImageObject",
+          url: heroImage,
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${page.url}#breadcrumb`,
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: `${root}/`,
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: breadcrumbName,
+            item: page.groupUrl,
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: page.h1,
+            item: page.url,
+          },
+        ],
       },
     ],
   };
@@ -313,19 +388,32 @@ function renderPage(page) {
     <title>${page.title}</title>
     <meta name="description" content="${page.description}" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="author" content="K M Consulting" />
+    <meta name="publisher" content="Empowering Aspirational India" />
+    <meta name="keywords" content="${keywords}" />
+    <meta name="theme-color" content="#0a2540" />
+    <meta name="application-name" content="Empowering Aspirational India" />
     <link rel="canonical" href="${page.url}" />
+    <link rel="alternate" hreflang="en-IN" href="${page.url}" />
+    <link rel="alternate" hreflang="x-default" href="${page.url}" />
     <link rel="icon" href="../../assets/logo.jpeg" />
     <link rel="stylesheet" href="../../assets/course-page.css" />
     <meta property="og:type" content="article" />
     <meta property="og:site_name" content="Empowering Aspirational India" />
+    <meta property="og:locale" content="en_IN" />
     <meta property="og:title" content="${page.title}" />
     <meta property="og:description" content="${page.description}" />
     <meta property="og:url" content="${page.url}" />
-    <meta property="og:image" content="${root}/assets/hero.jpeg" />
+    <meta property="og:image" content="${heroImage}" />
+    <meta property="og:image:secure_url" content="${heroImage}" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:alt" content="${page.h1} at Empowering Aspirational India" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${page.title}" />
     <meta name="twitter:description" content="${page.description}" />
-    <meta name="twitter:image" content="${root}/assets/hero.jpeg" />
+    <meta name="twitter:image" content="${heroImage}" />
+    <meta name="twitter:image:alt" content="${page.h1} at Empowering Aspirational India" />
     <script type="application/ld+json">${json(structuredData)}</script>
   </head>
   <body>
